@@ -1,0 +1,8 @@
+﻿NaN0 IRC ChangeLog:
+
+0.2.5b
+Began initial work on populating the Users textbox. Only need a way to change active channel now.
+Fixed some /commands.
+Added resizing.
+Adjusted visibility of tray icon.
+Hopefully fixed an issue with NOTICEs not displaying.
