@@ -8,7 +8,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Threading;
 
-// NaN0 IRC v0.2.5b
+// NaN0 IRC v0.3.0a
 // Houses the GUI and all associated framework
 
 namespace NaN0IRC
@@ -19,9 +19,13 @@ namespace NaN0IRC
         delegate void ChangeTopicCallback(String stuff);
         delegate void Restart();
         delegate void ChannelUsers(string thisChannel, string[] users);
+        delegate void ChannelAdd(string channelName);
 
         public const int CHATLINES = 200;
         string[] content = new string[CHATLINES];
+        List<string> channelList;
+        List<Button> channelButtons;
+        string currentChannel;
         Irc irc;
         int currentLine;
         string[] previousLines;
@@ -48,6 +52,7 @@ namespace NaN0IRC
 
         public void irc_stuffHappened(string stuff) // This is for a single-line change
         {
+            /*
             for (int i = 0; i < content.Length-1; i++)
                 content[i] = content[i+1];
             content[content.Length-1] = stuff;
@@ -61,13 +66,15 @@ namespace NaN0IRC
                         (d, new object[] { content });
                 }
                 catch (ObjectDisposedException)
-                { /* AFAIK this only happens if we close the form, anyway. No need to handle*/ }
+                { // AFAIK this only happens if we close the form, anyway. No need to handle
+                }
             }
             else
             {
                 // It's on the same thread, no need for Invoke
                 SetText(content);
-            }
+            } */
+            irc_stuffHappened(irc.changeChannel(currentChannel));
         }
 
         public void irc_stuffHappened(string[] stuff)
@@ -113,6 +120,34 @@ namespace NaN0IRC
             { }
         }
 
+        public void newChannel(string channelName)
+        {
+            int c = channelButtons.Count;
+            int w = c*5;
+            foreach (Button thing in channelButtons)
+                w += thing.Width;
+            channelList.Add(channelName);
+            //currentChannel = channelName;
+            channelButtons.Add(new Button());
+            channelButtons[c].Name = channelName;
+            channelButtons[c].Location = new Point(w+20,10);
+            channelButtons[c].Text = channelName;
+            this.Controls.Add(channelButtons[c]);
+            channelButtons[c].Click += new System.EventHandler(this.channelButtonClick);
+            this.channelButtonClick(channelButtons[c], MouseEventArgs.Empty);
+        }
+
+        private void channelButtonClick(object sender, EventArgs e)
+        {
+            foreach (Button thing in channelButtons)
+                if (sender.Equals(thing))
+                {
+                    irc_stuffHappened(irc.changeChannel(thing.Text));
+                    currentChannel = thing.Text;
+
+                }
+        }
+
         private void SetText(string[] text)
         {
             try
@@ -132,6 +167,8 @@ namespace NaN0IRC
             channel = textBoxChannel.Text;
             nick = textBoxNick.Text;
             name = "NaN0 "+nick;
+            channelList = new List<string>();
+            channelButtons = new List<Button>();
             irc = new Irc(server, port, channel, nick, name);
             button1.Visible = false;
             richTextBoxChat.Visible = true;
@@ -141,6 +178,7 @@ namespace NaN0IRC
             irc.topicChanged += new TopicChanged(irc_topicChanged);
             irc.restart += new global::NaN0IRC.Restart(irc_restart);
             irc.channelUsers += new ListNames(irc_channelUsers);
+            irc.joinNewChannel += new NewChannel(irc_joinNewChannel);
             t1 = new Thread(new ThreadStart(irc.connect));
             t1.Start();
             label1.Visible = false;
@@ -155,6 +193,22 @@ namespace NaN0IRC
             this.Text += String.Format(" ({0} on {1})", nick, server);
             timer1.Start();
             timer1.Interval = 1000*60*2;
+        }
+
+        void irc_joinNewChannel(string channelName)
+        {
+            if (this.textBoxUsers.InvokeRequired)
+            {
+                // It's on a different thread, so use Invoke.
+                ChannelAdd d = new ChannelAdd(newChannel);
+                this.Invoke
+                    (d, new object[] { channelName });
+            }
+            else
+            {
+                // It's on the same thread, no need for Invoke
+                newChannel(channelName);
+            }
         }
 
         void irc_channelUsers(string thisChannel, string[] channelUsers)
@@ -179,7 +233,7 @@ namespace NaN0IRC
                 irc.ping();
         }
 
-        void irc_restart()
+        void irc_restart() //This section still needs some serious development
         {
             try
             {
@@ -234,7 +288,12 @@ namespace NaN0IRC
             if (input.Substring(0, 1) == "/") // Dealing with slash commands
                 slashCommands(input);
             else
-                irc.write("!" + input);
+            { //Need to handle the chat input for the current channel.
+                if (currentChannel != "Server")
+                    irc.write(String.Format("!PRIVMSG {0} :{1}", currentChannel, input));
+                else
+                    irc.write("!" + input);
+            }
             bool duplicate = false;
             for (int i = 0; i < previousLines.Length - 1; i++)
                 if (previousLines[i] == input)
@@ -354,6 +413,14 @@ namespace NaN0IRC
                     else
                         irc.write("!PRIVMSG CHANSERV :" + arg + " " + message);
                     break;
+                case "TOPIC":
+                    if (arg == "")
+                        irc.cWrite("Command /TOPIC requires an argument, i.e. /TOPIC #CHANNEL");
+                    else if (message == "")
+                        irc.cWrite("Command /TOPIC requires a message, i.e. /TOPIC #CHANNEL MESSAGE");
+                    else
+                        irc.write(String.Format("!TOPIC {0} :{1}", arg, message));
+                    break;
                 case "":
                     break;
                 default:
@@ -403,11 +470,11 @@ namespace NaN0IRC
 
                 //this.labelTopic.Location = new System.Drawing.Point(20, 21);
                 //this.labelTopic.Size = new System.Drawing.Size(0, 16);
-                this.richTextBoxChat.Location = new System.Drawing.Point(20, 42);
+                this.richTextBoxChat.Location = new System.Drawing.Point(20, 62);
                 this.richTextBoxChat.Size = new System.Drawing.Size(617 + x, 485 + y);
-                this.textBoxUsers.Location = new System.Drawing.Point(636 + x, 42);
+                this.textBoxUsers.Location = new System.Drawing.Point(636 + x, 62);
                 this.textBoxUsers.Size = new System.Drawing.Size(126, 504 + y);
-                this.textBoxInput.Location = new System.Drawing.Point(20, 526 + y);
+                this.textBoxInput.Location = new System.Drawing.Point(20, 546 + y);
                 this.textBoxInput.Size = new System.Drawing.Size(617 + x, 20);
                 this.richTextBoxChat.SelectionStart = this.richTextBoxChat.TextLength;
                 this.richTextBoxChat.ScrollToCaret();
@@ -428,13 +495,14 @@ namespace NaN0IRC
                 this.richTextBoxChat.SelectionStart = this.richTextBoxChat.TextLength;
                 this.richTextBoxChat.ScrollToCaret();
                 e.SuppressKeyPress = true;
+                currentLine = previousLines.Length-1;
             }
             else if (e.KeyCode == Keys.Escape)
             {
                 this.textBoxInput.Text = "";
                 e.SuppressKeyPress = true;
             }
-            else if (e.KeyCode == Keys.Up)
+            else if (e.KeyCode == Keys.Up) //Still not working properly
             {
                 bool scrolling = false;
                 for (int i = 0; i < previousLines.Length; i++)

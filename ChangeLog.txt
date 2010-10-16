@@ -1,5 +1,22 @@
 ﻿NaN0 IRC ChangeLog:
 
+Latest:
+
+0.3.0a
+Rudimentary multi-channel support added. Now uses buttons to swap between channels.
+No more "/w #channel message", now just type straight into the chatbox for the relevant channel.
+Also fixed a couple of other things, like previous message scrolling should be smoother.
+
+Known issues:
+Still need to remove channels if you leave or get kicked.
+Might be a problem with differentiating between upper/lower case letters in channel names. Alternatively, this might actually be fine.
+
+Historical:
+
+0.2.5c
+Icon changed.
+/TOPIC command added
+
 0.2.5b
 Began initial work on populating the Users textbox. Only need a way to change active channel now.
 Fixed some /commands.

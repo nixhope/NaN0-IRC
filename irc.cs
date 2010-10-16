@@ -13,6 +13,7 @@ namespace NaN0IRC
     public delegate void TopicChanged(string stuff);
     public delegate void Restart();
     public delegate void ListNames(string thisChannel, string[] channelUsers);
+    public delegate void NewChannel(string channelName);
 
     class Irc
     {
@@ -20,11 +21,12 @@ namespace NaN0IRC
         public event TopicChanged topicChanged;
         public event Restart restart;
         public event ListNames channelUsers;
+        public event NewChannel joinNewChannel;
 
         private string server;
         private int port;
         private string channel;
-        private string nick;
+        private string nick; // The NaN0 user's name
         private string name;
         private TcpClient connection;
         private NetworkStream stream;
@@ -40,6 +42,7 @@ namespace NaN0IRC
         private bool log = true;
         private bool getResponse = false;
         private DateTime lastPing;
+        private string currentChannel;
 
         public void connect()
         {
@@ -200,23 +203,57 @@ namespace NaN0IRC
             catch (NullReferenceException) { restart(); }
         }
 
-        // Write to console
+        // Write to console or GUI
         public void cWrite(string output)
         {
             DateTime now = DateTime.Now;
             if (output.Substring(0, 1) == "!") // Input command written to console, don't timestamp
             {
                 this.stuffHappened(output.Substring(1));
+                channels[0].changeContents(output);
             }
-            else if (timestamp)
+            else 
             {
-                this.stuffHappened(String.Format("{0:yyyy/MM/dd HH:mm} {1}", now, output));
-                this.logging(output);
-            }
-            else
-            {
-                this.stuffHappened(output);
-                this.logging(output);
+                this.logging(output); // Write to Logs
+                string cName = output.Substring(0, output.IndexOf(' '));
+                if (cName.Substring(cName.Length - 1) == ":")
+                    cName = cName.Substring(0, cName.Length - 1);
+                bool existingChannel = false;
+                foreach (Channel thing in channels)
+                    if (thing.Name == cName)
+                    {
+                        existingChannel = true;
+                        if (timestamp)
+                        {
+                            thing.changeContents(String.Format("{0:yyyy/MM/dd HH:mm} {1}", now, output));
+                            this.stuffHappened(String.Format("{0:yyyy/MM/dd HH:mm} {1}", now, output));
+                        }
+                        else
+                        {
+                            thing.changeContents(output);
+                            this.stuffHappened(output);
+                        }
+                    }
+                if (!existingChannel) // Sender not on known channel list, probably a private user
+                {
+                    
+                    channelNames.Add(cName);
+                    channels.Add(new Channel(cName));
+                    channels[channels.Count - 1].addUser(cName);
+                    channels[channels.Count - 1].addUser(nick);
+                    this.joinNewChannel(cName);
+                    currentChannel = cName;
+                    if (timestamp)
+                    {
+                        channels[channels.Count-1].changeContents(String.Format("{0:yyyy/MM/dd HH:mm} {1}", now, output));
+                        this.stuffHappened(String.Format("{0:yyyy/MM/dd HH:mm} {1}", now, output));
+                    }
+                    else
+                    {
+                        channels[channels.Count - 1].changeContents(output);
+                        this.stuffHappened(output);
+                    }
+                }
             }
             Thread.Sleep(100);
         }
@@ -260,11 +297,12 @@ namespace NaN0IRC
                 parts[2] = parts[2].Substring(1);
             string channelJoined = parts[2];
             string user = parts[0].Split('!')[0];
-            cWrite(String.Format("{0}: {1} joined {0}", channelJoined, user));
-            if (parts[0].Split('!')[0] == nick) // One way to work out if the user successfully joined a new channel
+            if (parts[0].Split('!')[0] == nick) // A simple way to work out if the user successfully joined a new channel
             {
                 channelNames.Add(channelJoined);
                 channels.Add(new Channel(channelJoined));
+                this.joinNewChannel(channelJoined);
+                currentChannel = channelJoined;
             }
             else
             {
@@ -275,6 +313,7 @@ namespace NaN0IRC
                     this.channelUsers(thing.Name, thing.getUsers()); // Event that changes the GUI TextBox
                 }
             }
+            cWrite(String.Format("{0}: {1} joined {0}", channelJoined, user));
         }
 
         // User left channel
@@ -381,6 +420,20 @@ namespace NaN0IRC
                 cWrite(String.Format("{0}: <{1}> {2}", recipient, sender, message));
             else
                 cWrite(String.Format("{0}: <{1}> {2}", recipient, sender, message));
+        }
+
+        public string[] changeChannel(string channelName)
+        {
+            string[] errorString = new string[1];
+            errorString[0] = String.Format("{0} is not an applicable channel", channelName);
+            currentChannel = channelName;
+            foreach (Channel thing in channels)
+                if (thing.Name == channelName)
+                {
+                    this.channelUsers(thing.Name, thing.getUsers());
+                    return thing.Contents;
+                }
+            return errorString;
         }
 
         public void closeIRC()
@@ -558,6 +611,7 @@ namespace NaN0IRC
             this.server = ircServer;
             this.port = ircPort;
             this.channel = ircChannel;
+            this.currentChannel = ircChannel;
             this.nick = ircNick;
             this.name = ircName;
             this.boss = new List<string>();

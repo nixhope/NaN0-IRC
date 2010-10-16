@@ -14,6 +14,12 @@ namespace NaN0IRC
         string topic;
         string[] contents;
 
+        //
+        // Summary:
+        //     Gets or sets the Name of the Channel
+        //
+        // Returns:
+        //     The Name of the Channel as a string
         public string Name { get { return name; } set { name = value; } }
         public string Topic { get { return topic; } set { topic = value; } }
 
@@ -26,6 +32,15 @@ namespace NaN0IRC
             }
             users.Sort();
         }
+
+        public void changeContents(string stuff)
+        {
+            for (int i = 0; i < contents.Length - 1; i++)
+                contents[i] = contents[i + 1];
+            contents[contents.Length - 1] = stuff;
+        }
+
+        public string[] Contents { get { return contents; } }
 
         public bool containsUser(string user) { return users.Contains(user); }
         public void removeUser(string user) { users.Remove(user); }

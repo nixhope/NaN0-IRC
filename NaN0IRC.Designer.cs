@@ -55,7 +55,7 @@
             // 
             this.textBoxInput.AcceptsReturn = true;
             this.textBoxInput.AcceptsTab = true;
-            this.textBoxInput.Location = new System.Drawing.Point(20, 526);
+            this.textBoxInput.Location = new System.Drawing.Point(20, 546);
             this.textBoxInput.Name = "textBoxInput";
             this.textBoxInput.Size = new System.Drawing.Size(617, 20);
             this.textBoxInput.TabIndex = 1;
@@ -105,7 +105,7 @@
             // 
             this.labelTopic.AutoSize = true;
             this.labelTopic.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelTopic.Location = new System.Drawing.Point(20, 21);
+            this.labelTopic.Location = new System.Drawing.Point(20, 39);
             this.labelTopic.Name = "labelTopic";
             this.labelTopic.Size = new System.Drawing.Size(0, 16);
             this.labelTopic.TabIndex = 3;
@@ -115,7 +115,7 @@
             // 
             this.richTextBoxChat.BackColor = System.Drawing.SystemColors.Window;
             this.richTextBoxChat.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.7F);
-            this.richTextBoxChat.Location = new System.Drawing.Point(20, 42);
+            this.richTextBoxChat.Location = new System.Drawing.Point(20, 62);
             this.richTextBoxChat.Name = "richTextBoxChat";
             this.richTextBoxChat.ReadOnly = true;
             this.richTextBoxChat.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
@@ -199,7 +199,7 @@
             // 
             // textBoxUsers
             // 
-            this.textBoxUsers.Location = new System.Drawing.Point(636, 42);
+            this.textBoxUsers.Location = new System.Drawing.Point(636, 62);
             this.textBoxUsers.Multiline = true;
             this.textBoxUsers.Name = "textBoxUsers";
             this.textBoxUsers.Size = new System.Drawing.Size(126, 504);
@@ -217,7 +217,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Window;
-            this.ClientSize = new System.Drawing.Size(784, 562);
+            this.ClientSize = new System.Drawing.Size(784, 582);
             this.Controls.Add(this.textBoxUsers);
             this.Controls.Add(this.textBoxNick);
             this.Controls.Add(this.textBoxChannel);
