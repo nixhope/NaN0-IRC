@@ -144,7 +144,7 @@ namespace NaN0IRC
                 {
                     irc_stuffHappened(irc.changeChannel(thing.Text));
                     currentChannel = thing.Text;
-
+                    this.labelTopic.Text = irc.getTopic(currentChannel);
                 }
         }
 

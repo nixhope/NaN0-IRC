@@ -1,15 +1,29 @@
 ﻿NaN0 IRC ChangeLog:
 
 Latest:
+0.3.0b
+Topic now changes when channel is changed.
+And a few other things changed as well.
 
 0.3.0a
 Rudimentary multi-channel support added. Now uses buttons to swap between channels.
 No more "/w #channel message", now just type straight into the chatbox for the relevant channel.
-Also fixed a couple of other things, like previous message scrolling should be smoother.
+Also fixed a couple of other things, e.g. previous message scrolling (using up arrow at text input) should be smoother.
 
 Known issues:
 Still need to remove channels if you leave or get kicked.
-Might be a problem with differentiating between upper/lower case letters in channel names. Alternatively, this might actually be fine.
+Problem with differentiating between upper/lower case letters in channel names. Since channel names are generally lower case, more of a problem when messaging users.
+RichTextChat doesn't scale properly, if you adjust the height the last line is partially covered.
+Slash commands need to be made relevant to the currentChannel.
+
+Planned improvements:
+Focus to inputText after changing channel.
+Tab completion.
+Interaction with usernames.
+Options/settings/preferences menu.
+New chat notification. Both while minimised (icon change) and maximised (channel button change).
+New chat highlighting since currentChannel last gained focus, and other channels last were active.
+
 
 Historical:
 

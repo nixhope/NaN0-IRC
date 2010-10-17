@@ -436,6 +436,16 @@ namespace NaN0IRC
             return errorString;
         }
 
+        public string getTopic(string channelName)
+        {
+            foreach (Channel thing in channels)
+            {
+                if (thing.Name == channelName)
+                    return thing.Topic;
+            }
+            return "";
+        }
+
         public void closeIRC()
         {
             try
