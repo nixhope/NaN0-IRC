@@ -185,7 +185,7 @@
             this.textBoxChannel.Name = "textBoxChannel";
             this.textBoxChannel.Size = new System.Drawing.Size(100, 20);
             this.textBoxChannel.TabIndex = 11;
-            this.textBoxChannel.Text = "#NaN0";
+            this.textBoxChannel.Text = "#plt1";
             this.textBoxChannel.KeyDown += new System.Windows.Forms.KeyEventHandler(this.loginInfo_KeyDown);
             // 
             // textBoxNick
@@ -194,7 +194,7 @@
             this.textBoxNick.Name = "textBoxNick";
             this.textBoxNick.Size = new System.Drawing.Size(100, 20);
             this.textBoxNick.TabIndex = 12;
-            this.textBoxNick.Text = "NaN0irc";
+            this.textBoxNick.Text = "DarkSentinel";
             this.textBoxNick.KeyDown += new System.Windows.Forms.KeyEventHandler(this.loginInfo_KeyDown);
             // 
             // textBoxUsers
@@ -219,8 +219,8 @@
             this.BackColor = System.Drawing.SystemColors.Window;
             this.ClientSize = new System.Drawing.Size(784, 582);
             this.Controls.Add(this.textBoxUsers);
-            this.Controls.Add(this.textBoxNick);
             this.Controls.Add(this.textBoxChannel);
+            this.Controls.Add(this.textBoxNick);
             this.Controls.Add(this.textBoxPort);
             this.Controls.Add(this.textBoxServer);
             this.Controls.Add(this.label4);

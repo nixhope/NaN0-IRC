@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+// This class currently does not do anything at all. But in theory one day the NaN0IRC user can play rock paper scissors lizard spock.
+// I bet no other IRC client has this.
+
 namespace NaN0IRC
 {
     class RPSLS

@@ -8,7 +8,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Threading;
 
-// NaN0 IRC v0.3.0a
+// NaN0 IRC v0.3.1a
 // Houses the GUI and all associated framework
 
 namespace NaN0IRC
@@ -234,13 +234,7 @@ namespace NaN0IRC
         }
 
         void irc_restart() //This section still needs some serious development
-        {
-            try
-            {
-                irc.write("!QUIT :Attempting to restart connection");
-            }
-            catch (ObjectDisposedException) { }
-            catch (System.IO.IOException) { }
+        { /*
             DateTime now = DateTime.Now;
             if (now.CompareTo(lastRestart.AddMinutes(1)) > 0)
             {
@@ -256,12 +250,33 @@ namespace NaN0IRC
             if (restartCounter < 10)
             {
                 irc.connect();
+                try
+                    {
+                        irc.write("!QUIT :Attempting to restart connection");
+                    }
+                catch (ObjectDisposedException) { }
+                catch (System.IO.IOException) { }
             }
             else
             {
                 irc_stuffHappened(String.Format("Disconnection process aborted after {0} attempts.",restartCounter));
                 button1.Visible = true;
+            }*/
+            if (this.button1.InvokeRequired)
+            {
+                // It's on a different thread, so use Invoke.
+                Restart d = new Restart(reconnectButton);
+                this.Invoke(d);
             }
+            else { this.reconnectButton(); }
+        }
+        
+        private void reconnectButton()
+        {
+            irc_stuffHappened("NaN0IRC experienced a connection failure. Click below to attempt reconnection.");
+            button1.Visible = true;
+            button1.Text = "Reconnect";
+            textBoxInput.Visible = false;
         }
 
         void irc_topicChanged(string stuff)
@@ -271,8 +286,7 @@ namespace NaN0IRC
             {
                 // It's on a different thread, so use Invoke.
                 ChangeTopicCallback d = new ChangeTopicCallback(topic);
-                this.Invoke
-                    (d, new object[] { stuff });
+                this.Invoke(d, new object[] { stuff });
             }
             else
             {
@@ -311,7 +325,7 @@ namespace NaN0IRC
             input = input.Substring(1); // Removes slash
             string command; // "/COMMAND"
             string arg = ""; // "/COMMAND ARG"
-            string message = "";
+            string message = ""; // "/COMMAND ARG MESSAGE"
             if (input.Contains(' '))
             {
                 command = input.Substring(0, input.IndexOf(' '));
@@ -360,19 +374,15 @@ namespace NaN0IRC
                     break;
                 case "ME":
                     if (arg == "")
-                        irc.cWrite("Command /ME requires an argument, i.e. /ME CHANNEL");
-                    else if (message == "")
-                        irc.cWrite("Command /ME requires an action, i.e. /ME CHANNEL ACTION");
+                        irc.cWrite("Command /ME requires an argument, i.e. /ME ACTION");
                     else
-                        irc.write(String.Format("!PRIVMSG {0} :\u0001ACTION {1}\u0001", arg, message));
+                        irc.write(String.Format("!PRIVMSG {0} :\u0001ACTION {1} {2}\u0001", currentChannel, arg, message));
                     break;
                 case "EM":
                     if (arg == "")
-                        irc.cWrite("Command /EM requires an argument, i.e. /EM CHANNEL");
-                    else if (message == "")
-                        irc.cWrite("Command /EM requires an action, i.e. /EM CHANNEL ACTION");
+                        irc.cWrite("Command /EM requires an argument, i.e. /EM ACTION");
                     else
-                        irc.write(String.Format("!PRIVMSG {0} :\u0001ACTION {1}\u0001", arg, message));
+                        irc.write(String.Format("!PRIVMSG {0} :\u0001ACTION {1} {2}\u0001", currentChannel, arg, message));
                     break;
                 case "QUIT":
                     if (arg == "")
@@ -381,19 +391,14 @@ namespace NaN0IRC
                         irc.write("QUIT :" + arg + " " + message);
                     break;
                 case "LEAVE":
-                    if (arg == "")
-                        irc.cWrite("Command /LEAVE requires an argument, i.e. /LEAVE CHANNEL");
-                    else
-                        irc.write("PART " + arg + " :" + message);
+                    irc.write(String.Format("PART {0} :{1} {2}", currentChannel, arg, message));
                     break;
                 case "PART":
-                    if (arg == "")
-                        irc.cWrite("Command /PART requires an argument, i.e. /PART CHANNEL");
-                    else
-                        irc.write("PART " + arg + " :" + message);
+                    irc.write(String.Format("PART {0} :{1} {2}", currentChannel, arg, message));
                     break;
                 case "MODE":
-                    irc.cWrite("Command /MODE not yet supported due to object structure. WIP.");
+                    //irc.cWrite(String.Format("!MODE {0} {1} {2}", currentChannel, arg, message));
+                    irc.write(String.Format("MODE {0} {1} {2}",currentChannel,arg,message));//"MODE " + currentChannel + " :" + arg + " " + message);
                     break;
                 case "NICK":
                     if (arg == "")
@@ -415,16 +420,14 @@ namespace NaN0IRC
                     break;
                 case "TOPIC":
                     if (arg == "")
-                        irc.cWrite("Command /TOPIC requires an argument, i.e. /TOPIC #CHANNEL");
-                    else if (message == "")
-                        irc.cWrite("Command /TOPIC requires a message, i.e. /TOPIC #CHANNEL MESSAGE");
+                        irc.cWrite("Command /TOPIC requires an argument, i.e. /TOPIC TOPIC");
                     else
-                        irc.write(String.Format("!TOPIC {0} :{1}", arg, message));
+                        irc.write(String.Format("!TOPIC {0} :{1} {2}", currentChannel, arg, message).Trim());
                     break;
                 case "":
                     break;
                 default:
-                    irc.cWrite(String.Format("NaN0IRC Command /{0} not recognised or not currently supported by NaN0 IRC. If you think it should, please contact the author.",
+                    irc.cWrite(String.Format("Command /{0} not recognised or not currently supported by NaN0 IRC. If you think it should, please contact the author.",
                         command));
                     break;
             }
@@ -449,6 +452,8 @@ namespace NaN0IRC
             this.notifyIcon1.Visible = false;
             this.richTextBoxChat.SelectionStart = this.richTextBoxChat.TextLength;
             this.richTextBoxChat.ScrollToCaret();
+            this.textBoxInput.SelectionStart = this.richTextBoxChat.TextLength;
+            this.textBoxInput.ScrollToCaret();
         }
 
         private void toolStripMenuItem2_Click(object sender, EventArgs e)

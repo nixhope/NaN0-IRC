@@ -1,9 +1,14 @@
 ﻿NaN0 IRC ChangeLog:
 
 Latest:
+0.3.1a
+Disconnect/reconnect handling hopefully improved slightly. Still needs work as it currently does not auto-reconnect.
+Reconnecting seems to fail sometimes.
+
 0.3.0b
 Topic now changes when channel is changed.
-And a few other things changed as well.
+/slash commands are now assumed to be directed at the current channel.
+Rudimentary support for the /mode command.
 
 0.3.0a
 Rudimentary multi-channel support added. Now uses buttons to swap between channels.
@@ -14,9 +19,10 @@ Known issues:
 Still need to remove channels if you leave or get kicked.
 Problem with differentiating between upper/lower case letters in channel names. Since channel names are generally lower case, more of a problem when messaging users.
 RichTextChat doesn't scale properly, if you adjust the height the last line is partially covered.
-Slash commands need to be made relevant to the currentChannel.
+Non-ASCII characters can sometimes force a font-change in RichTextChat.
 
 Planned improvements:
+Auto-reconnect upon disconnection.
 Focus to inputText after changing channel.
 Tab completion.
 Interaction with usernames.

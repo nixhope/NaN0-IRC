@@ -24,7 +24,7 @@ namespace NaN0IRC
         public string Topic { get { return topic; } set { topic = value; } }
 
         public void addUser(string user) {
-            if (user.Length > 0)
+            if (user.Length > 0 && !users.Contains(user))
             {
                 if (user.Substring(0, 1) == "@" | user.Substring(0, 1) == "+")
                     user = user.Substring(1);

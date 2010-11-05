@@ -57,29 +57,33 @@ namespace NaN0IRC
                 connection = new TcpClient(server, port);
             }
             catch (SocketException) { restart(); }
-            stream = connection.GetStream();
-            reader = new StreamReader(stream);
-            writer = new StreamWriter(stream);
-            authenticate();
-            join(channel);
-
-            while (!quit)
+            try
             {
-                /* Following code is nifty, but listening is based on events
-                cWrite("!LISTENING");
-                DateTime now = DateTime.Now;
-                if (now.CompareTo(lastPing.AddMinutes(1)) > 0)
-                    ping();
-                if (now.CompareTo(lastPing.AddSeconds(2)) > 0)
+                stream = connection.GetStream();
+                reader = new StreamReader(stream);
+                writer = new StreamWriter(stream);
+                authenticate();
+                join(channel);
+
+                while (!quit)
                 {
-                    cWrite("PING Timeout. Connection to server lost.");
-                    //restart();
-                }*/
-                listen();
+                    /* Following code is nifty, but listening is based on events
+                    cWrite("!LISTENING");
+                    DateTime now = DateTime.Now;
+                    if (now.CompareTo(lastPing.AddMinutes(1)) > 0)
+                        ping();
+                    if (now.CompareTo(lastPing.AddSeconds(2)) > 0)
+                    {
+                        cWrite("PING Timeout. Connection to server lost.");
+                        //restart();
+                    }*/
+                    listen();
+                }
+                writer.Close();
+                reader.Close();
+                connection.Close();
             }
-            writer.Close();
-            reader.Close();
-            connection.Close();
+            catch (NullReferenceException) { cWrite("NaN0IRC could not initialise connection."); restart(); }
         }
 
         private void listen()
