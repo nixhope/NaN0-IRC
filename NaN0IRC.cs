@@ -38,6 +38,8 @@ namespace NaN0IRC
         int restartCounter = 0;
         DateTime lastRestart;
         Size originalSize;
+        String lastTabbedUser;
+        String tabSeed;
 
         public NaN0IRC()
         {
@@ -132,6 +134,7 @@ namespace NaN0IRC
             channelButtons[c].Name = channelName;
             channelButtons[c].Location = new Point(w+20,10);
             channelButtons[c].Text = channelName;
+            channelButtons[c].TabStop = false;
             this.Controls.Add(channelButtons[c]);
             channelButtons[c].Click += new System.EventHandler(this.channelButtonClick);
             this.channelButtonClick(channelButtons[c], MouseEventArgs.Empty);
@@ -162,37 +165,44 @@ namespace NaN0IRC
 
         private void button1_Click(object sender, EventArgs e)
         {
-            server = textBoxServer.Text;
-            port = int.Parse(textBoxPort.Text);
-            channel = textBoxChannel.Text;
-            nick = textBoxNick.Text;
-            name = "NaN0 "+nick;
-            channelList = new List<string>();
-            channelButtons = new List<Button>();
-            irc = new Irc(server, port, channel, nick, name);
-            button1.Visible = false;
-            richTextBoxChat.Visible = true;
-            textBoxInput.Visible = true;
-            textBoxUsers.Visible = true;
-            irc.stuffHappened += new StuffHappened(irc_stuffHappened);
-            irc.topicChanged += new TopicChanged(irc_topicChanged);
-            irc.restart += new global::NaN0IRC.Restart(irc_restart);
-            irc.channelUsers += new ListNames(irc_channelUsers);
-            irc.joinNewChannel += new NewChannel(irc_joinNewChannel);
-            t1 = new Thread(new ThreadStart(irc.connect));
-            t1.Start();
-            label1.Visible = false;
-            label2.Visible = false;
-            label3.Visible = false;
-            label4.Visible = false;
-            textBoxChannel.Visible = false;
-            textBoxNick.Visible = false;
-            textBoxPort.Visible = false;
-            textBoxServer.Visible = false;
-            textBoxInput.Focus();
-            this.Text += String.Format(" ({0} on {1})", nick, server);
-            timer1.Start();
-            timer1.Interval = 1000*60*2;
+            try
+            {
+                server = textBoxServer.Text;
+                port = int.Parse(textBoxPort.Text);
+                channel = textBoxChannel.Text;
+                nick = textBoxNick.Text;
+                name = "NaN0 " + nick;
+                channelList = new List<string>();
+                channelButtons = new List<Button>();
+                irc = new Irc(server, port, channel, nick, name);
+                button1.Visible = false;
+                richTextBoxChat.Visible = true;
+                textBoxInput.Visible = true;
+                textBoxUsers.Visible = true;
+                irc.stuffHappened += new StuffHappened(irc_stuffHappened);
+                irc.topicChanged += new TopicChanged(irc_topicChanged);
+                irc.restart += new global::NaN0IRC.Restart(irc_restart);
+                irc.channelUsers += new ListNames(irc_channelUsers);
+                irc.joinNewChannel += new NewChannel(irc_joinNewChannel);
+                t1 = new Thread(new ThreadStart(irc.connect));
+                t1.Start();
+                label1.Visible = false;
+                label2.Visible = false;
+                label3.Visible = false;
+                label4.Visible = false;
+                textBoxChannel.Visible = false;
+                textBoxNick.Visible = false;
+                textBoxPort.Visible = false;
+                textBoxServer.Visible = false;
+                textBoxInput.Focus();
+                this.Text += String.Format(" ({0} on {1})", nick, server);
+                timer1.Start();
+                timer1.Interval = 1000 * 60 * 2;
+            }
+            catch (Exception exc)
+            {
+                MessageBox.Show("Well, that's not good: " + exc);
+            }
         }
 
         void irc_joinNewChannel(string channelName)
@@ -494,6 +504,88 @@ namespace NaN0IRC
 
         private void textBoxInput_KeyDown(object sender, KeyEventArgs e)
         {
+            /*
+            if (e.KeyCode == Keys.Tab)
+            {
+                // Code written by Jeremy Read and Abhishek Reddy
+                var users = irc.channels.Find(p => p.Name == currentChannel).getUsers();
+                String ti = textBoxInput.Text;
+                var last = ti.Split(' ').Last();
+
+                //var matchedName = users.FirstOrDefault(user => user.StartsWith(last, StringComparison.CurrentCultureIgnoreCase));
+
+
+                var matchedNames = users.Select(user => user.StartsWith(last, StringComparison.CurrentCultureIgnoreCase));
+                String matchedName = "";
+
+                String[] wololo = matchedNames.ToArray();
+                int tabIndex = matchedNames.ToArray().Contains(true);
+                if (tabSeed != "" && matchedNames.ToArray().Length > tabIndex+2) {
+                    matchedName = matchedNames.ToArray[tabIndex+1];
+                }
+                // var matchedName = users.FirstOrDefault(user => user.StartsWith( user.StartsWith(last, StringComparison.CurrentCultureIgnoreCase));
+
+                String suffix = "";
+                if (!ti.Contains(' ') && matchedName != null)
+                {
+                    suffix = ": ";
+                }
+                textBoxInput.Text = ti.Substring(0, ti.LastIndexOf(last)) + (matchedName ?? ti) + suffix;
+                textBoxInput.Select(textBoxInput.Text.Length, 0);
+                textBoxInput.ScrollToCaret();
+            }
+            else
+            {
+                tabSeed = "";
+            }*/
+            if (e.KeyCode == Keys.Tab)
+            {
+                String ti = textBoxInput.Text;
+                var last = ti.Trim().Split(' ').Last();
+                String matchedName = "";
+
+                List<String> allUsers = irc.getCurrentUsers().ToList();
+                bool matched = false; // I hate break statements
+                foreach (String user in allUsers) { // If we've already tabbed, then tabSeed will be a short string, and last will currently be a full name
+                    if (!matched){ // So I don't have to break out of the loop
+                        if (user.ToLower().StartsWith(last.ToLower()) && tabSeed == "") { // We don't currently have a tab
+                            matchedName = user;
+                            tabSeed = last;
+                            matched = true;
+                        }
+                        else if (last.StartsWith(user)) // Since last probably has a ": " concatenated to it
+                        {
+                            int tabIndex = allUsers.IndexOf(user);
+                            if (tabIndex < allUsers.Count+1)
+                            {
+                                if (allUsers[tabIndex + 1].ToLower().StartsWith(tabSeed.ToLower()))
+                                {
+                                    matchedName = allUsers[tabIndex + 1];
+                                    matched = true;
+                                }
+                                else
+                                { // Return to original case
+                                    matchedName = tabSeed;
+                                    tabSeed = "";
+                                    matched = true;
+                                }
+                            }
+                        }
+                    }
+                }
+                String suffix = "";
+                if (!ti.Contains(' ') && matchedName != null)
+                {
+                    suffix = ": ";
+                }
+                textBoxInput.Text = ti.Substring(0, ti.LastIndexOf(last)) + (matchedName ?? ti) + suffix;
+                textBoxInput.Select(textBoxInput.Text.Length, 0);
+                textBoxInput.ScrollToCaret();
+            }
+            else
+            {
+                tabSeed = "";
+            }
             if (e.KeyCode == Keys.Enter && textBoxInput.Text != "")
             {
                 textBoxInput_Enter(sender, e);

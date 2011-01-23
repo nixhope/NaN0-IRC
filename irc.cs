@@ -63,7 +63,20 @@ namespace NaN0IRC
                 reader = new StreamReader(stream);
                 writer = new StreamWriter(stream);
                 authenticate();
-                join(channel);
+                if (channel.Contains(";")) {
+                    String[] allChannels = channel.Split(';');
+                    foreach(String s in allChannels) {
+                        join(s.Trim());
+                    }
+                } else if (channel.Contains(",")) {
+                    String[] allChannels = channel.Split(',');
+                    foreach (String s in allChannels)
+                    {
+                        join(s.Trim());
+                    }
+                } else {
+                    join(channel);
+                }
 
                 while (!quit)
                 {
@@ -113,7 +126,7 @@ namespace NaN0IRC
             if (input != null)
             {
                 lastPing = DateTime.Now;
-                //cWrite("!"+input); // Checking stuff during testing
+                cWrite("!"+input); // Checking stuff during testing
                 input = parseInput(input);
                 if (input.Substring(0, 1) == ":")
                     input = input.Substring(1);
@@ -143,11 +156,24 @@ namespace NaN0IRC
                                 break;
                             case "QUIT":
                                 userQuit(parts);
-                                break;
+                                break;                            
                             case "PRIVMSG":
                                 String sender = parts[0].Substring(0, input.IndexOf("!"));
                                 String recipient = parts[2];
                                 String message = input.Substring(input.IndexOf(":") + 1);
+                                if (channelNames.Contains(recipient.ToLower()))
+                                {   // Message is in a channel
+                                    channelMsg(sender, recipient, message);
+                                }
+                                else if (recipient.ToLower() == nick.ToLower())
+                                {   // Message is private to user
+                                    privateMsg(sender, message);
+                                }
+                                break;
+                            case "NOTICE": // Testing
+                                sender = parts[0].Substring(0, input.IndexOf("!"));
+                                recipient = parts[2];
+                                message = input.Substring(input.IndexOf(":") + 1);
                                 if (channelNames.Contains(recipient.ToLower()))
                                 {   // Message is in a channel
                                     channelMsg(sender, recipient, message);
@@ -356,7 +382,7 @@ namespace NaN0IRC
         private void changeNick(string[] parts)
         {
             string oldNick = parts[0].Split('!')[0];
-            string newNick = parts[2].Remove(0, 1);
+            string newNick = parts[2].Trim();
             if (oldNick == nick)
                 nick = newNick;
             if (boss.Contains(oldNick))
@@ -448,6 +474,18 @@ namespace NaN0IRC
                     return thing.Topic;
             }
             return "";
+        }
+
+        public String[] getCurrentUsers()
+        {
+            // This is a terrible implementation. Ideally, channel would be called current channel and would be a channel object, with the correct reference
+            foreach (Channel thing in channels)
+                if (thing.Name == channel)
+                {
+                    return thing.getUsers();
+                }
+            String[] empty = {};
+            return empty;
         }
 
         public void closeIRC()

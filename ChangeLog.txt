@@ -1,6 +1,10 @@
 ﻿NaN0 IRC ChangeLog:
 
 Latest:
+0.3.1b
+Multi-channel join on startup added. Simply separate with a semicolon or a comma, e.g. "#channel1, #channel2" or "#c1 ;#c2"
+Basic tab completion of nicknames.
+
 0.3.1a
 Disconnect/reconnect handling hopefully improved slightly. Still needs work as it currently does not auto-reconnect.
 Reconnecting seems to fail sometimes.
@@ -24,11 +28,12 @@ Non-ASCII characters can sometimes force a font-change in RichTextChat.
 Planned improvements:
 Auto-reconnect upon disconnection.
 Focus to inputText after changing channel.
-Tab completion.
+Tab completion cycling.
 Interaction with usernames.
 Options/settings/preferences menu.
 New chat notification. Both while minimised (icon change) and maximised (channel button change).
 New chat highlighting since currentChannel last gained focus, and other channels last were active.
+Close channel buttons when quitting a channel, and quit/close channel by right-clicking on its button.
 
 
 Historical:
@@ -43,3 +48,14 @@ Fixed some /commands.
 Added resizing.
 Adjusted visibility of tray icon.
 Hopefully fixed an issue with NOTICEs not displaying.
+
+
+Redesign ideas:
+break into the following classes:
+NaN0IRC
+-keyboard input
+irc
+-channels
+-users
+
+Have currentChannel be an Object in the list of channels

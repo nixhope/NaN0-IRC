@@ -59,6 +59,7 @@
             this.textBoxInput.Name = "textBoxInput";
             this.textBoxInput.Size = new System.Drawing.Size(617, 20);
             this.textBoxInput.TabIndex = 1;
+            this.textBoxInput.TabStop = false;
             this.textBoxInput.Visible = false;
             this.textBoxInput.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBoxInput_KeyDown);
             // 
@@ -185,7 +186,7 @@
             this.textBoxChannel.Name = "textBoxChannel";
             this.textBoxChannel.Size = new System.Drawing.Size(100, 20);
             this.textBoxChannel.TabIndex = 11;
-            this.textBoxChannel.Text = "#plt1";
+            this.textBoxChannel.Text = "#plt1,#codemonkies";
             this.textBoxChannel.KeyDown += new System.Windows.Forms.KeyEventHandler(this.loginInfo_KeyDown);
             // 
             // textBoxNick
@@ -204,6 +205,7 @@
             this.textBoxUsers.Name = "textBoxUsers";
             this.textBoxUsers.Size = new System.Drawing.Size(126, 504);
             this.textBoxUsers.TabIndex = 13;
+            this.textBoxUsers.TabStop = false;
             this.textBoxUsers.Visible = false;
             this.textBoxUsers.WordWrap = false;
             // 
